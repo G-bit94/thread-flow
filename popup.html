@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ThreadFlow</title>
+    <style>
+      body {
+        width: 280px;
+        font-family: "Roboto", Arial, sans-serif;
+        font-size: 14px;
+        color: #202124;
+        margin: 0;
+        padding: 0;
+      }
+
+      .header {
+        text-align: center;
+        padding: 16px 12px;
+        background: #f5f5f5;
+        border-bottom: 1px solid #dadce0;
+      }
+
+      .logo {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 8px;
+      }
+
+      h1 {
+        font-size: 18px;
+        color: #1a73e8;
+        margin: 0;
+        font-weight: 500;
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      .status-box {
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 16px;
+      }
+
+      .status-trial {
+        background-color: #fef7e0;
+        color: #ea8600;
+        border: 1px solid #fdd663;
+      }
+
+      .status-purchased {
+        background-color: #e6f4ea;
+        color: #137333;
+        border: 1px solid #81c995;
+      }
+
+      .status-expired {
+        background-color: #fce8e6;
+        color: #c5221f;
+        border: 1px solid #f5afa9;
+      }
+
+      .license-form {
+        margin-bottom: 16px;
+      }
+
+      input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        box-sizing: border-box;
+        margin-bottom: 8px;
+      }
+
+      button {
+        background-color: #1a73e8;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      button:hover {
+        background-color: #1967d2;
+      }
+
+      .payment-options {
+        margin-top: 16px;
+      }
+
+      .payment-options h2 {
+        font-size: 14px;
+        margin-bottom: 8px;
+        color: #5f6368;
+        font-weight: normal;
+      }
+
+      .payment-button {
+        display: block;
+        text-align: center;
+        padding: 8px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        border: 1px solid #dadce0;
+        cursor: pointer;
+        text-decoration: none;
+        color: #1a73e8;
+      }
+
+      .payment-button:hover {
+        background-color: #f1f3f4;
+      }
+
+      .info {
+        font-size: 12px;
+        color: #5f6368;
+        text-align: center;
+        margin-top: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <img src="icons/icon48.png" alt="ThreadFlow Logo" class="logo" />
+      <h1>ThreadFlow</h1>
+    </div>
+
+    <div class="content">
+      <div id="status-container" class="status-box status-trial">
+        <strong>Trial Version</strong><br />
+        <span id="trial-info">Loading...</span>
+      </div>
+
+      <div id="license-form" class="license-form" style="display: none">
+        <input
+          type="text"
+          id="license-key"
+          placeholder="Enter your license key"
+        />
+        <button id="activate-button">Activate License</button>
+      </div>
+
+      <div id="payment-options" class="payment-options" style="display: none">
+        <h2>Purchase ($19.99 one-time payment)</h2>
+        <a
+          href="#"
+          class="payment-button"
+          data-method="paypal"
+          id="paypal-button"
+          >Pay with PayPal</a
+        >
+        <a
+          href="#"
+          class="payment-button"
+          data-method="crypto"
+          id="crypto-button"
+          >Pay with Crypto</a
+        >
+        <a
+          href="#"
+          class="payment-button"
+          data-method="gumroad"
+          id="gumroad-button"
+          >Pay with Gumroad</a
+        >
+        <a
+          href="#"
+          class="payment-button"
+          data-method="paystack"
+          id="paystack-button"
+          >Pay with Paystack</a
+        >
+      </div>
+
+      <div class="info" id="version-info">ThreadFlow v1.0.0</div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
