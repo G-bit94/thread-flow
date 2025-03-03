@@ -21,13 +21,23 @@
 }
 
 /* Main container */
-.threadflow-container {
+.threadflow-container,
+.threadflow-full-container {
   margin: 12px 0 !important;
   font-family: Arial, sans-serif !important;
   line-height: 1.5 !important;
   color: #202124 !important;
   width: 100% !important;
   box-sizing: border-box !important;
+}
+
+/* Full conversation view styling */
+.threadflow-full-container {
+  background-color: #ffffff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3) !important;
+  padding: 16px !important;
+  margin: 20px 0 !important;
 }
 
 /* Conversation container */
@@ -85,7 +95,189 @@
   word-break: break-word !important;
 }
 
-/* Toggle view button */
+/* ThreadFlow Controls Bar */
+.threadflow-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px !important;
+  padding: 10px !important;
+  background-color: #f8f9fa !important;
+  border-radius: 8px !important;
+  border: 1px solid #dadce0 !important;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.12) !important;
+}
+
+.threadflow-view-toggle,
+.threadflow-sort-toggle,
+.threadflow-original-toggle {
+  background-color: #1a73e8 !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 4px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  margin: 0 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 110px !important;
+}
+
+/* Button icons using Unicode characters */
+.threadflow-view-toggle::before,
+.threadflow-sort-toggle::before,
+.threadflow-original-toggle::before {
+  margin-right: 6px !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+}
+
+.threadflow-view-toggle[data-view="thread"]::before {
+  content: "💬" !important; /* Chat bubble icon when showing thread view */
+}
+
+.threadflow-view-toggle[data-view="chat"]::before {
+  content: "📋" !important; /* List icon when showing chat view */
+}
+
+.threadflow-sort-toggle[data-sort="newest"]::before {
+  content: "⬆️" !important; /* Up arrow for oldest first */
+}
+
+.threadflow-sort-toggle[data-sort="oldest"]::before {
+  content: "⬇️" !important; /* Down arrow for newest first */
+}
+
+.threadflow-original-toggle::before {
+  content: "📄" !important; /* Document icon for original view */
+}
+
+.threadflow-view-toggle:hover,
+.threadflow-sort-toggle:hover,
+.threadflow-original-toggle:hover {
+  background-color: #1967d2 !important;
+}
+
+/* Chat View Styles */
+.threadflow-chat-view {
+  padding: 12px !important;
+  border-radius: 8px !important;
+  background-color: #f8f9fa !important;
+  max-height: 650px !important; /* Increased height for scrolling */
+  overflow-y: auto !important; /* Enable vertical scrolling */
+  scrollbar-width: thin !important; /* Firefox */
+  scrollbar-color: #dadce0 #f8f9fa !important; /* Firefox */
+}
+
+/* Webkit scrollbar styling */
+.threadflow-chat-view::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+.threadflow-chat-view::-webkit-scrollbar-track {
+  background: #f8f9fa !important;
+  border-radius: 8px !important;
+}
+
+.threadflow-chat-view::-webkit-scrollbar-thumb {
+  background-color: #dadce0 !important;
+  border-radius: 8px !important;
+  border: 2px solid #f8f9fa !important;
+}
+
+.threadflow-chat-view::-webkit-scrollbar-thumb:hover {
+  background-color: #bdc1c6 !important;
+}
+
+.threadflow-chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 16px !important;
+  padding-right: 4px !important; /* Space for scrollbar */
+}
+
+.threadflow-chat-bubble-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 80% !important;
+  margin-bottom: 8px !important;
+}
+
+.threadflow-chat-left {
+  align-self: flex-start;
+}
+
+.threadflow-chat-right {
+  align-self: flex-end;
+}
+
+.threadflow-chat-sender {
+  font-size: 12px !important;
+  color: #5f6368 !important;
+  margin-bottom: 4px !important;
+  padding-left: 12px !important;
+}
+
+.threadflow-chat-bubble {
+  padding: 12px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.1) !important;
+  position: relative !important;
+}
+
+.threadflow-chat-left .threadflow-chat-bubble {
+  background-color: #f1f3f4 !important;
+  border-top-left-radius: 4px !important;
+}
+
+.threadflow-chat-right .threadflow-chat-bubble {
+  background-color: #e3f2fd !important;
+  border-top-right-radius: 4px !important;
+}
+
+.threadflow-chat-content {
+  font-size: 14px !important;
+  color: #202124 !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+.threadflow-chat-time {
+  font-size: 11px !important;
+  color: #5f6368 !important;
+  text-align: right !important;
+  margin-top: 4px !important;
+}
+
+/* Fix bubble formatting for Gmail-specific elements */
+.threadflow-chat-content .gmail_quote,
+.threadflow-chat-content .gmail_attr {
+  color: inherit !important;
+  font-size: inherit !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+/* Improve quote formatting in chat bubbles */
+.threadflow-chat-content blockquote {
+  margin: 8px 0 !important;
+  padding-left: 8px !important;
+  border-left: 3px solid #dadce0 !important;
+  color: #5f6368 !important;
+}
+
+/* Handle image sizing in chat bubbles */
+.threadflow-chat-content img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 8px !important;
+}
+
+/* Toggle button */
 .threadflow-toggle {
   display: block !important;
   margin: 12px auto !important;
@@ -195,4 +387,36 @@
 .threadflow-simple-content div {
   max-width: 100% !important;
   box-sizing: border-box !important;
+}
+
+/* Trigger button styling */
+.threadflow-trigger-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f1f3f4;
+  cursor: pointer;
+  margin: 0 4px;
+  transition: all 0.2s ease;
+  position: relative;
+  color: #5f6368;
+}
+
+.threadflow-trigger-button:hover {
+  background-color: #e8eaed;
+  color: #202124;
+}
+
+.threadflow-trigger-active {
+  background-color: #e8f0fe;
+  color: #1a73e8;
+}
+
+.threadflow-trigger-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

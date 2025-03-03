@@ -1,5 +1,5 @@
 // ThreadFlow - Gmail Conversation Organizer
-// Based on analysis of Gmail's DOM structure and debugging findings
+// Simplified version that focuses on enhancing trimmed content
 
 (function () {
     console.log('ThreadFlow content script loaded');
@@ -281,75 +281,135 @@
             const container = document.createElement('div');
             container.className = 'threadflow-container';
 
-            // Create conversation view
-            const conversation = document.createElement('div');
-            conversation.className = 'threadflow-conversation';
+            // Create controls at the top
+            const controlsBar = document.createElement('div');
+            controlsBar.className = 'threadflow-controls';
 
-            // Add each message in reverse order (newest first)
-            messages.reverse().forEach(function (message) {
-                // Create message element
-                const messageEl = document.createElement('div');
-                messageEl.className = 'threadflow-message';
+            // Toggle View type (Thread/Chat)
+            const viewToggle = document.createElement('button');
+            viewToggle.className = 'threadflow-view-toggle';
+            viewToggle.textContent = 'Chat View';
+            viewToggle.setAttribute('data-view', 'thread');
 
-                // Message header
-                const headerEl = document.createElement('div');
-                headerEl.className = 'threadflow-header';
+            // Toggle Sort Order
+            const sortToggle = document.createElement('button');
+            sortToggle.className = 'threadflow-sort-toggle';
+            sortToggle.textContent = 'Oldest First';
+            sortToggle.setAttribute('data-sort', 'newest');
 
-                // Sender info
-                const senderEl = document.createElement('div');
-                senderEl.className = 'threadflow-sender';
-                senderEl.textContent = message.sender || 'Unknown Sender';
+            // Original View Toggle
+            const originalToggle = document.createElement('button');
+            originalToggle.className = 'threadflow-toggle threadflow-original-toggle';
+            originalToggle.textContent = 'Switch to Original View';
 
-                // Timestamp
-                const timeEl = document.createElement('div');
-                timeEl.className = 'threadflow-timestamp';
-                timeEl.textContent = message.timestamp || '';
+            // Add buttons to controls
+            controlsBar.appendChild(viewToggle);
+            controlsBar.appendChild(sortToggle);
+            controlsBar.appendChild(originalToggle);
 
-                // Assemble header
-                headerEl.appendChild(senderEl);
-                headerEl.appendChild(timeEl);
+            // Create conversation views
+            // 1. Thread view (default)
+            const threadView = document.createElement('div');
+            threadView.className = 'threadflow-conversation threadflow-thread-view';
 
-                // Message content
-                const contentEl = document.createElement('div');
-                contentEl.className = 'threadflow-content';
-                contentEl.innerHTML = message.content;
+            // 2. Chat view (hidden initially)
+            const chatView = document.createElement('div');
+            chatView.className = 'threadflow-conversation threadflow-chat-view';
+            chatView.style.display = 'none';
 
-                // Assemble message
-                messageEl.appendChild(headerEl);
-                messageEl.appendChild(contentEl);
-                conversation.appendChild(messageEl);
+            // 3. Original content (hidden)
+            const originalView = document.createElement('div');
+            originalView.className = 'threadflow-original';
+            originalView.innerHTML = originalHTML;
+            originalView.style.display = 'none';
+
+            // Populate the thread view
+            let chronologicalMessages = [...messages];
+
+            // Populate thread view (newest first by default)
+            populateThreadView(threadView, chronologicalMessages.reverse());
+
+            // Populate chat view (newest first by default)
+            populateChatView(chatView, chronologicalMessages);
+
+            // Set up view toggle functionality
+            viewToggle.addEventListener('click', function () {
+                const currentView = this.getAttribute('data-view');
+
+                if (currentView === 'thread') {
+                    // Switch to chat view
+                    threadView.style.display = 'none';
+                    chatView.style.display = 'block';
+                    originalView.style.display = 'none';
+                    this.setAttribute('data-view', 'chat');
+                    this.textContent = 'Thread View';
+                    originalToggle.textContent = 'Switch to Original View';
+                } else {
+                    // Switch to thread view
+                    threadView.style.display = 'block';
+                    chatView.style.display = 'none';
+                    originalView.style.display = 'none';
+                    this.setAttribute('data-view', 'thread');
+                    this.textContent = 'Chat View';
+                    originalToggle.textContent = 'Switch to Original View';
+                }
             });
 
-            // Create hidden original content container
-            const originalContainer = document.createElement('div');
-            originalContainer.className = 'threadflow-original';
-            originalContainer.innerHTML = originalHTML;
-            originalContainer.style.display = 'none';
+            // Set up sort toggle functionality
+            sortToggle.addEventListener('click', function () {
+                const currentSort = this.getAttribute('data-sort');
+                let newMessages = [...chronologicalMessages]; // Clone the array
 
-            // Create toggle button
-            const toggleButton = document.createElement('button');
-            toggleButton.className = 'threadflow-toggle';
-            toggleButton.textContent = 'Switch to Original View';
-
-            // Set up toggle functionality
-            toggleButton.addEventListener('click', function () {
-                if (conversation.style.display === 'none') {
-                    // Switch to ThreadFlow view
-                    conversation.style.display = '';
-                    originalContainer.style.display = 'none';
-                    toggleButton.textContent = 'Switch to Original View';
+                if (currentSort === 'newest') {
+                    // Switch to oldest first
+                    this.setAttribute('data-sort', 'oldest');
+                    this.textContent = 'Newest First';
+                    // Messages are already in chronological order
                 } else {
+                    // Switch to newest first
+                    this.setAttribute('data-sort', 'newest');
+                    this.textContent = 'Oldest First';
+                    // Reverse to show newest first
+                    newMessages.reverse();
+                }
+
+                // Update both views
+                threadView.innerHTML = '';
+                chatView.innerHTML = '';
+                populateThreadView(threadView, newMessages);
+                populateChatView(chatView, newMessages);
+            });
+
+            // Set up original toggle functionality
+            originalToggle.addEventListener('click', function () {
+                // Get currently active view
+                const activeView = viewToggle.getAttribute('data-view');
+
+                if (originalView.style.display === 'none') {
                     // Switch to original view
-                    conversation.style.display = 'none';
-                    originalContainer.style.display = '';
-                    toggleButton.textContent = 'Switch to ThreadFlow View';
+                    threadView.style.display = 'none';
+                    chatView.style.display = 'none';
+                    originalView.style.display = 'block';
+                    this.textContent = activeView === 'thread' ? 'Switch to Thread View' : 'Switch to Chat View';
+                } else {
+                    // Switch back to active view
+                    if (activeView === 'thread') {
+                        threadView.style.display = 'block';
+                        chatView.style.display = 'none';
+                    } else {
+                        threadView.style.display = 'none';
+                        chatView.style.display = 'block';
+                    }
+                    originalView.style.display = 'none';
+                    this.textContent = 'Switch to Original View';
                 }
             });
 
             // Assemble ThreadFlow container
-            container.appendChild(conversation);
-            container.appendChild(originalContainer);
-            container.appendChild(toggleButton);
+            container.appendChild(controlsBar);
+            container.appendChild(threadView);
+            container.appendChild(chatView);
+            container.appendChild(originalView);
 
             // Replace original content
             element.innerHTML = '';
@@ -359,6 +419,271 @@
         } else {
             // Fallback: simple formatting
             applySimpleFormatting(element, originalHTML);
+        }
+    }
+
+    function populateThreadView(container, messages) {
+        // Add each message to thread view
+        messages.forEach(function (message) {
+            const messageEl = document.createElement('div');
+            messageEl.className = 'threadflow-message';
+
+            // Message header
+            const headerEl = document.createElement('div');
+            headerEl.className = 'threadflow-header';
+
+            // Sender info
+            const senderEl = document.createElement('div');
+            senderEl.className = 'threadflow-sender';
+            senderEl.textContent = message.sender || 'Unknown Sender';
+
+            // Timestamp
+            const timeEl = document.createElement('div');
+            timeEl.className = 'threadflow-timestamp';
+            timeEl.textContent = message.timestamp || '';
+
+            // Assemble header
+            headerEl.appendChild(senderEl);
+            headerEl.appendChild(timeEl);
+
+            // Message content
+            const contentEl = document.createElement('div');
+            contentEl.className = 'threadflow-content';
+            contentEl.innerHTML = message.content;
+
+            // Assemble message
+            messageEl.appendChild(headerEl);
+            messageEl.appendChild(contentEl);
+            container.appendChild(messageEl);
+        });
+    }
+
+    // Improved function to extract only the newest content from a message
+    function extractNewestContent(htmlContent) {
+        if (!htmlContent || htmlContent.trim() === '') return htmlContent;
+
+        // Create a temporary element to work with the HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+
+        // STEP 1: Remove blockquotes and gmail_quote sections completely
+        // These are clearly nested content
+        const quoteSelectors = [
+            'blockquote',
+            '.gmail_quote',
+            '.adL'
+        ];
+
+        for (const selector of quoteSelectors) {
+            const quotes = tempDiv.querySelectorAll(selector);
+            for (const quote of quotes) {
+                if (quote.parentNode) {
+                    quote.parentNode.removeChild(quote);
+                }
+            }
+        }
+
+        // STEP 2: Identify but don't remove paragraphs yet
+        // First collect all paragraphs that look like headers
+        const paragraphs = tempDiv.querySelectorAll('p, div');
+        const headerParagraphs = [];
+
+        for (const p of paragraphs) {
+            const text = p.textContent.trim();
+
+            // Check if this paragraph is a quote header (but don't remove it yet)
+            if ((text.match(/^On .+? wrote:/) ||
+                text.match(/^On .+?, .+? at .+? .+? <.+?@.+?> wrote:/) ||
+                text.match(/^From: .+? <.+?@.+?>/) ||
+                text.includes('Sender notified by Mailtrack')) &&
+                text.length < 200) { // Length check to avoid matching actual content
+
+                headerParagraphs.push(p);
+            }
+        }
+
+        // STEP 3: Check if removing headers would leave anything
+        if (headerParagraphs.length > 0) {
+            // Count how many text nodes we'd have left if we removed all headers
+            let remainingTextNodes = 0;
+            const walker = document.createTreeWalker(tempDiv, NodeFilter.SHOW_TEXT, null, false);
+            while (walker.nextNode()) {
+                let skip = false;
+                for (const headerP of headerParagraphs) {
+                    if (headerP.contains(walker.currentNode)) {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (!skip && walker.currentNode.textContent.trim()) {
+                    remainingTextNodes++;
+                }
+            }
+
+            // Only remove headers if we'd have some content left
+            if (remainingTextNodes > 0) {
+                for (const headerP of headerParagraphs) {
+                    if (headerP.parentNode) {
+                        headerP.parentNode.removeChild(headerP);
+                    }
+                }
+            }
+        }
+
+        // STEP 4: Clean up specific patterns that might not be in paragraphs
+        let html = tempDiv.innerHTML;
+
+        // Only perform replacements if the message has more than just these patterns
+        // This ensures we don't end up with empty messages
+        const patterns = [
+            /On [A-Za-z]{3}, [A-Za-z]{3} \d{1,2}, \d{4} at \d{1,2}:\d{2} [AP]M .+? wrote:/g,
+            /On [A-Za-z]{3}, [A-Za-z]{3} \d{1,2}, \d{4} at \d{1,2}:\d{2} [AP]M/g,
+            /Sender notified by Mailtrack/g
+        ];
+
+        // Check if removing all patterns would leave us with content
+        let testHtml = html;
+        for (const pattern of patterns) {
+            testHtml = testHtml.replace(pattern, '');
+        }
+
+        // Only apply replacements if we'd have content left
+        if (testHtml.trim() !== '') {
+            for (const pattern of patterns) {
+                html = html.replace(pattern, '');
+            }
+        }
+
+        // STEP 5: Clean up any single-line emails that only contain a date
+        // This handles the empty messages with just a timestamp in your screenshot
+        if (html.trim().match(/^[A-Za-z]{3} \d{1,2}, \d{4} at \d{1,2}:\d{2} [AP]M$/)) {
+            // This is just a timestamp, check if we should remove it
+            if (tempDiv.textContent.trim().length < 30) {
+                html = ''; // Clear it as it's just metadata
+            }
+        }
+
+        // STEP 6: Clean up Mailtrack images
+        html = html.replace(/<img[^>]*Mailtrack[^>]*>/g, '');
+
+        // STEP 7: Clean up multiple breaks that might have been left
+        html = html.replace(/<br>\s*<br>\s*<br>/g, '<br><br>');
+
+        // Return the cleaned HTML, but if it's empty, return original to be safe
+        return html.trim() || htmlContent;
+    }
+
+    // For chat bubbles, use a more dynamic approach that doesn't rely on hardcoded names
+    function populateChatView(container, messages) {
+        // Create a messages container for the chat view
+        const messagesContainer = document.createElement('div');
+        messagesContainer.className = 'threadflow-chat-messages';
+
+        // Analyze the conversation to identify message directions
+        const messageFlow = analyzeMessageFlow(messages);
+
+        // Add each message as a chat bubble
+        messages.forEach(function (message, index) {
+            // Skip empty messages
+            if (!message.content || message.content.trim() === '') return;
+
+            // Extract clean content
+            const cleanContent = extractNewestContent(message.content);
+
+            // Skip this message if after cleaning, there's nothing left to show
+            if (!cleanContent || cleanContent.trim() === '') {
+                console.log('Skipping empty message after cleaning');
+                return;
+            }
+
+            // Create bubble container
+            const bubbleContainer = document.createElement('div');
+            bubbleContainer.className = 'threadflow-chat-bubble-container';
+
+            // Use the message flow analysis to determine direction
+            const isRight = messageFlow[index] === 'right';
+
+            // Set the alignment based on flow analysis
+            bubbleContainer.classList.add(isRight ? 'threadflow-chat-right' : 'threadflow-chat-left');
+
+            // Create sender label
+            const senderLabel = document.createElement('div');
+            senderLabel.className = 'threadflow-chat-sender';
+            senderLabel.textContent = message.sender || 'Unknown Sender';
+
+            // Create bubble
+            const bubble = document.createElement('div');
+            bubble.className = 'threadflow-chat-bubble';
+
+            // Message content
+            const contentEl = document.createElement('div');
+            contentEl.className = 'threadflow-chat-content';
+            contentEl.innerHTML = cleanContent;
+
+            // Don't show empty bubbles
+            if (contentEl.textContent.trim() === '') {
+                console.log('Skipping message with empty text content');
+                return;
+            }
+
+            // Timestamp - only show if we have a timestamp
+            if (message.timestamp && message.timestamp.trim()) {
+                const timeEl = document.createElement('div');
+                timeEl.className = 'threadflow-chat-time';
+                timeEl.textContent = message.timestamp;
+                bubble.appendChild(timeEl);
+            }
+
+            // Store the message direction for debugging
+            bubble.setAttribute('data-direction', isRight ? 'right' : 'left');
+
+            // Assemble bubble - content first, then time
+            bubble.insertBefore(contentEl, bubble.firstChild);
+
+            // Assemble container
+            bubbleContainer.appendChild(senderLabel);
+            bubbleContainer.appendChild(bubble);
+            messagesContainer.appendChild(bubbleContainer);
+        });
+
+        container.appendChild(messagesContainer);
+    }
+
+    // Analyze message flow to determine left/right alignment
+    function analyzeMessageFlow(messages) {
+        // Create a mapping of unique senders to count their messages
+        const senderCounts = {};
+        const uniqueSenders = new Set();
+
+        // First pass: Count messages per sender and collect unique senders
+        messages.forEach(message => {
+            const sender = message.sender || 'Unknown';
+            senderCounts[sender] = (senderCounts[sender] || 0) + 1;
+            uniqueSenders.add(sender);
+        });
+
+        // If we have exactly two senders, we can use alternating pattern
+        // This works well for most email conversations
+        const senders = Array.from(uniqueSenders);
+
+        if (senders.length === 2) {
+            // Identify the main sender (the one with more messages)
+            const [sender1, sender2] = senders;
+            const mainSender = senderCounts[sender1] >= senderCounts[sender2] ? sender1 : sender2;
+
+            // Map each message to left/right - SWAPPED DIRECTION!
+            // Now main sender (typically sender) is on LEFT, other person (recipient) is on RIGHT
+            return messages.map(message => {
+                // REVERSED: Now the main sender gets 'left', other gets 'right'
+                return (message.sender === mainSender) ? 'left' : 'right';
+            });
+        } else {
+            // For conversations with more participants or unknown structure,
+            // we'll use a basic alternating pattern but with reversed direction
+            return messages.map((message, index) => {
+                // REVERSED: First message now on right, then alternate
+                return (index % 2 === 0) ? 'right' : 'left';
+            });
         }
     }
 
@@ -516,6 +841,18 @@
         const container = document.createElement('div');
         container.className = 'threadflow-container threadflow-simple';
 
+        // Create control bar
+        const controlsBar = document.createElement('div');
+        controlsBar.className = 'threadflow-controls';
+
+        // Original View Toggle
+        const originalToggle = document.createElement('button');
+        originalToggle.className = 'threadflow-toggle threadflow-original-toggle';
+        originalToggle.textContent = 'Switch to Original View';
+
+        // Add button to controls
+        controlsBar.appendChild(originalToggle);
+
         // Create formatted content container
         const formattedContent = document.createElement('div');
         formattedContent.className = 'threadflow-simple-content';
@@ -539,30 +876,25 @@
         originalContent.innerHTML = originalHTML;
         originalContent.style.display = 'none';
 
-        // Create toggle button
-        const toggleButton = document.createElement('button');
-        toggleButton.className = 'threadflow-toggle';
-        toggleButton.textContent = 'Switch to Original View';
-
         // Set up toggle functionality
-        toggleButton.addEventListener('click', function () {
+        originalToggle.addEventListener('click', function () {
             if (formattedContent.style.display === 'none') {
                 // Switch to formatted view
                 formattedContent.style.display = '';
                 originalContent.style.display = 'none';
-                toggleButton.textContent = 'Switch to Original View';
+                this.textContent = 'Switch to Original View';
             } else {
                 // Switch to original view
                 formattedContent.style.display = 'none';
                 originalContent.style.display = '';
-                toggleButton.textContent = 'Switch to ThreadFlow View';
+                this.textContent = 'Switch to ThreadFlow View';
             }
         });
 
         // Assemble container
+        container.appendChild(controlsBar);
         container.appendChild(formattedContent);
         container.appendChild(originalContent);
-        container.appendChild(toggleButton);
 
         // Replace content
         element.innerHTML = '';
